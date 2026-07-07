@@ -1,0 +1,104 @@
+name: Compilar BajaVideos (Mac y Windows)
+
+on:
+  push:
+    branches: [main, master]
+    tags: ["v*"]
+  workflow_dispatch: {}
+
+defaults:
+  run:
+    working-directory: BajaVideos-v2
+
+jobs:
+  mac:
+    strategy:
+      matrix:
+        include:
+          - runner: macos-14
+            arch: AppleSilicon
+          - runner: macos-13
+            arch: Intel
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pyinstaller pillow
+
+      - name: Crear icono .icns
+        run: |
+          mkdir icon.iconset
+          for s in 16 32 64 128 256 512; do
+            sips -z $s $s assets/icon.png --out icon.iconset/icon_${s}x${s}.png
+            sips -z $((s*2)) $((s*2)) assets/icon.png --out icon.iconset/icon_${s}x${s}@2x.png
+          done
+          iconutil -c icns icon.iconset -o assets/icon.icns
+
+      - name: Compilar .app
+        run: |
+          pyinstaller --noconfirm --windowed \
+            --name "BajaVideos" \
+            --icon assets/icon.icns \
+            --collect-all customtkinter \
+            --collect-all imageio_ffmpeg \
+            --collect-all yt_dlp \
+            --collect-all telegram \
+            app.py
+
+      - name: Firmar (ad-hoc) y empaquetar
+        run: |
+          codesign --force --deep -s - "dist/BajaVideos.app"
+          ditto -c -k --keepParent "dist/BajaVideos.app" "BajaVideos-Mac-${{ matrix.arch }}.zip"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BajaVideos-Mac-${{ matrix.arch }}
+          path: BajaVideos-v2/BajaVideos-Mac-${{ matrix.arch }}.zip
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt pyinstaller
+
+      - name: Compilar .exe
+        run: |
+          pyinstaller --noconfirm --onefile --windowed --name "BajaVideos" --icon assets\icon.ico --collect-all customtkinter --collect-all imageio_ffmpeg --collect-all yt_dlp --collect-all telegram app.py
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BajaVideos-Windows
+          path: BajaVideos-v2/dist/BajaVideos.exe
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [mac, windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            BajaVideos-Mac-AppleSilicon.zip
+            BajaVideos-Mac-Intel.zip
+            BajaVideos.exe
+
