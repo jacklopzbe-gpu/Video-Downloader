@@ -39,6 +39,12 @@ WELCOME = (
     "descargará cuando la abras)."
 )
 
+WELCOME_BACK = (
+    "🟢 BajaVideos está abierta. Revisé los mensajes que mandaste "
+    "mientras estaba cerrada y los estoy procesando.\n"
+    "Los links nuevos se descargan al momento."
+)
+
 
 class TelegramBot(threading.Thread):
     def __init__(self, token: str, on_status, on_link, get_owner, set_owner):
@@ -68,6 +74,13 @@ class TelegramBot(threading.Thread):
                 me = await application.bot.get_me()
                 self.connected = True
                 self.on_status(True, f"@{me.username}")
+                # Avisa al dueño que la app ya está abierta (si ya hay dueño)
+                owner = self.get_owner()
+                if owner:
+                    try:
+                        await application.bot.send_message(owner, WELCOME_BACK)
+                    except Exception:
+                        pass
 
             app.post_init = post_init
             self.app = app
@@ -80,9 +93,18 @@ class TelegramBot(threading.Thread):
             )
         except Exception as e:
             self.connected = False
+            name = e.__class__.__name__
             msg = str(e)
-            if "InvalidToken" in e.__class__.__name__ or "Unauthorized" in msg:
+            if name == "Conflict" or "terminated by other getUpdates" in msg:
+                msg = (
+                    "Otro programa está usando este mismo bot "
+                    "(¿sigue abierto el BotVideos viejo?). Ciérralo y "
+                    "vuelve a abrir esta app."
+                )
+            elif name == "InvalidToken" or "Unauthorized" in msg:
                 msg = "El token no es válido. Revísalo en ⚙️ Ajustes."
+            elif name in ("NetworkError", "TimedOut") or "getaddrinfo" in msg:
+                msg = "Sin conexión a internet. Se reintentará al reabrir la app."
             self.on_status(False, msg)
 
     # ─── Handlers ─────────────────────────────────────────────────────────────
