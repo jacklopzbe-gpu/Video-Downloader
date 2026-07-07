@@ -1,0 +1,126 @@
+============================================
+   BajaVideos v2  —  Guía para Mac
+============================================
+
+Descarga videos de TikTok, Instagram y YouTube.
+Pegas el link, presionas Descargar y listo.
+
+
+------------------------------------------------
+INSTALAR (solo la primera vez)
+------------------------------------------------
+
+1) Descomprime el ZIP (doble clic) si no se
+   descomprimió solo.
+
+2) Arrastra "BajaVideos.app" a tu carpeta
+   Aplicaciones (opcional pero recomendado).
+
+3) IMPORTANTE — la primera vez que la abras:
+   La app no está firmada por Apple, así que Mac
+   te va a decir que "no se puede abrir".
+
+   Haz esto UNA sola vez:
+   a) Haz CLIC DERECHO (o Control + clic) sobre
+      BajaVideos.app y elige "Abrir".
+   b) En el aviso, presiona "Abrir".
+
+   Si aún así no deja (Macs más nuevas):
+   a) Intenta abrirla normal (te dirá que no).
+   b) Ve a  → Configuración del Sistema
+      → Privacidad y seguridad.
+   c) Abajo aparecerá "BajaVideos fue bloqueada…"
+      → presiona "Abrir de todos modos".
+
+   Después de esto se abre normal con doble clic,
+   para siempre.
+
+
+------------------------------------------------
+CONECTAR TELEGRAM (recomendado, una sola vez)
+------------------------------------------------
+
+Con Telegram puedes mandarle videos desde tu
+celular y se descargan solos en tu compu.
+
+1) En Telegram (celular o compu) busca el
+   contacto:  @BotFather
+2) Escríbele:  /newbot  y sigue los pasos
+   (te pedirá un nombre para tu bot).
+3) Al final te da un TOKEN (un código largo).
+   Cópialo.
+4) Abre BajaVideos: verás una tarjeta que dice
+   "Conecta tu bot de Telegram". Pega el token
+   y presiona "Conectar".
+5) Arriba aparecerá: 🟢 Bot conectado.
+
+IMPORTANTE: la primera persona que le escriba
+al bot queda como su dueño; a los demás los
+ignora. Escríbele tú primero (/start).
+
+
+------------------------------------------------
+CÓMO USARLA TODOS LOS DÍAS
+------------------------------------------------
+
+Desde el celular (lo más cómodo):
+1) Ves un TikTok que te gusta → Compartir →
+   enviar a tu bot de Telegram (o Copiar enlace
+   y pegárselo al bot).
+2) Cuando abras BajaVideos en tu compu, los
+   videos que mandaste se descargan solos y el
+   bot te confirma por Telegram. Si la app ya
+   estaba abierta, se bajan al instante.
+   (Ojo: Telegram guarda los mensajes pendientes
+   más o menos un día; no dejes pasar semanas.)
+
+En la compu (también funciona):
+1) Copia el link, presiona "📋 Pegar" y luego
+   "⬇️ Descargar".
+
+Los videos se guardan en:
+   Descargas → BajaVideos
+(puedes cambiar la carpeta en ⚙️ Ajustes)
+
+
+------------------------------------------------
+RESOLUME (opcional)
+------------------------------------------------
+
+Si usas Resolume Alley para convertir a DXV3:
+ve a ⚙️ Ajustes y activa "Abrir Resolume Alley
+al terminar cada descarga". La app lo abrirá
+solita y tú solo arrastras el video.
+
+
+------------------------------------------------
+SI ALGO NO SALE
+------------------------------------------------
+
+- "No se puede abrir la app":
+  sigue el paso 3 de INSTALAR (clic derecho → Abrir).
+
+- "🔴 Telegram: el token no es válido":
+  ve a ⚙️ Ajustes, borra el token y pega de nuevo
+  el que te dio @BotFather (completo, sin espacios).
+
+- El bot no me contesta:
+  el bot solo obedece a su "dueño" (el primero que
+  le escribió). Si es otra persona, en ⚙️ Ajustes
+  presiona "Cambiar dueño del bot" y vuélvele a
+  escribir desde el chat correcto.
+
+- Tu token es como una contraseña:
+  no lo compartas con nadie.
+
+- Un video da error:
+  a veces el link es privado o la plataforma cambió
+  algo. Prueba con otro link. Si TODOS fallan,
+  descarga la versión más nueva de la app.
+
+- ¿Qué versión bajo?
+  Mac con chip Apple (M1, M2, M3, M4…): AppleSilicon
+  Mac con Intel (2020 o antes): Intel
+  Si no sabes:  → Acerca de esta Mac.
+
+Que la disfrutes :)

@@ -1,0 +1,4 @@
+customtkinter>=5.2.2
+yt-dlp>=2025.1.1
+imageio-ffmpeg>=0.5.1
+python-telegram-bot>=21.0
