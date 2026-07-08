@@ -12,13 +12,7 @@ defaults:
 
 jobs:
   mac:
-    strategy:
-      matrix:
-        include:
-          - runner: macos-latest
-            arch: AppleSilicon
-            
-    runs-on: ${{ matrix.runner }}
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
 
@@ -54,12 +48,12 @@ jobs:
       - name: Firmar (ad-hoc) y empaquetar
         run: |
           codesign --force --deep -s - "dist/BajaVideos.app"
-          ditto -c -k --keepParent "dist/BajaVideos.app" "BajaVideos-Mac-${{ matrix.arch }}.zip"
+          ditto -c -k --keepParent "dist/BajaVideos.app" "BajaVideos-Mac-AppleSilicon.zip"
 
       - uses: actions/upload-artifact@v4
         with:
-          name: BajaVideos-Mac-${{ matrix.arch }}
-          path: BajaVideos-v2/BajaVideos-Mac-${{ matrix.arch }}.zip
+          name: BajaVideos-Mac-AppleSilicon
+          path: BajaVideos-v2/BajaVideos-Mac-AppleSilicon.zip
 
   windows:
     runs-on: windows-latest
@@ -98,6 +92,4 @@ jobs:
         with:
           files: |
             BajaVideos-Mac-AppleSilicon.zip
-            BajaVideos-Mac-Intel.zip
             BajaVideos.exe
-
