@@ -17,17 +17,21 @@ import customtkinter as ctk
 
 import downloader
 import settings
+import history_store
 from telegram_worker import TelegramBot
 
 APP_TITLE = "BajaVideos"
 VERSION = "2.0"
 
-ACCENT = "#7C4DFF"
-ACCENT_HOVER = "#6A3DE8"
+# ─ Identidad Balastra ─  (negro, rojo #EC2024, estilo técnico)
+ACCENT = "#EC2024"
+ACCENT_HOVER = "#C4181C"
 OK_COLOR = "#4CAF7D"
-ERR_COLOR = "#E05C5C"
-CARD_BG = ("#EDEDF2", "#26262E")
-SUBTLE = ("#6B6B76", "#9A9AA6")
+ERR_COLOR = "#FF6B6E"
+BG = ("#F5F5F5", "#000000")
+CARD_BG = ("#ECECEC", "#0E0E0E")
+CARD_BORDER = ("#DDDDDD", "#1A1A1A")
+SUBTLE = ("#6B6B76", "#B3B3B3")
 
 PLATFORM_EMOJI = {"TikTok": "🎵", "Instagram": "📸", "YouTube": "▶️", "Video": "🎬"}
 
@@ -36,7 +40,8 @@ class DownloadCard(ctk.CTkFrame):
     """Tarjeta de una descarga en la lista."""
 
     def __init__(self, master, url: str):
-        super().__init__(master, fg_color=CARD_BG, corner_radius=12)
+        super().__init__(master, fg_color=CARD_BG, corner_radius=6,
+                         border_width=1, border_color=CARD_BORDER)
         self.url = url
         self.file_path = None
         self.chat_id = None  # chat de Telegram que pidió esta descarga
@@ -224,6 +229,7 @@ class App(ctk.CTk):
         ctk.set_default_color_theme("dark-blue")
 
         self.title(f"{APP_TITLE}")
+        self.configure(fg_color=BG)
         self.geometry("760x640")
         self.minsize(620, 500)
 
@@ -234,13 +240,20 @@ class App(ctk.CTk):
         header = ctk.CTkFrame(self, fg_color="transparent")
         header.grid(row=0, column=0, sticky="ew", padx=28, pady=(24, 4))
         header.grid_columnconfigure(0, weight=1)
+        title_row = ctk.CTkFrame(header, fg_color="transparent")
+        title_row.grid(row=0, column=0, sticky="w")
         ctk.CTkLabel(
-            header, text=f"🎬  {APP_TITLE}",
-            font=ctk.CTkFont(size=26, weight="bold"),
-        ).grid(row=0, column=0, sticky="w")
+            title_row, text=APP_TITLE.upper(), text_color=ACCENT,
+            font=ctk.CTkFont(size=30, weight="bold"),
+        ).pack(side="left")
         ctk.CTkLabel(
-            header, text="Pega un link de TikTok, Instagram o YouTube y listo.",
-            text_color=SUBTLE, font=ctk.CTkFont(size=13),
+            title_row, text=".", text_color=("#111", "#FFF"),
+            font=ctk.CTkFont(size=30, weight="bold"),
+        ).pack(side="left")
+        ctk.CTkLabel(
+            header,
+            text="T I K T O K   ·   I N S T A G R A M   ·   Y O U T U B E",
+            text_color=SUBTLE, font=ctk.CTkFont(size=11, weight="bold"),
         ).grid(row=1, column=0, sticky="w")
         self.bot_status = ctk.CTkLabel(
             header, text="", text_color=SUBTLE, font=ctk.CTkFont(size=12),
@@ -273,7 +286,7 @@ class App(ctk.CTk):
         ).grid(row=0, column=1, padx=(0, 8))
 
         ctk.CTkButton(
-            entry_row, text="⬇️  Descargar", width=140, height=44, corner_radius=10,
+            entry_row, text="⬇  DESCARGAR", width=150, height=44, corner_radius=6,
             font=ctk.CTkFont(size=14, weight="bold"),
             fg_color=ACCENT, hover_color=ACCENT_HOVER,
             command=self._start_download,
@@ -305,8 +318,14 @@ class App(ctk.CTk):
             text_color=("#333", "#DDD"), hover_color=CARD_BG,
             command=self._open_folder,
         ).grid(row=0, column=0, sticky="w")
-        ctk.CTkLabel(footer, text=f"v{VERSION}", text_color=SUBTLE,
-                     font=ctk.CTkFont(size=11)).grid(row=0, column=2, sticky="e")
+        credit = ctk.CTkFrame(footer, fg_color="transparent")
+        credit.grid(row=0, column=2, sticky="e")
+        ctk.CTkLabel(credit, text="POWERED BY ", text_color=SUBTLE,
+                     font=ctk.CTkFont(size=10, weight="bold")).pack(side="left")
+        ctk.CTkLabel(credit, text="BALASTRA.", text_color=ACCENT,
+                     font=ctk.CTkFont(size=10, weight="bold")).pack(side="left")
+        ctk.CTkLabel(credit, text=f" & JACKKLO   ·   v{VERSION}", text_color=SUBTLE,
+                     font=ctk.CTkFont(size=10, weight="bold")).pack(side="left")
 
         self.cards_count = 0
         self.entry.focus()
@@ -314,10 +333,18 @@ class App(ctk.CTk):
         # ─ Telegram ─
         self.bot = None
         self.setup_card = None
+        self.active_urls = set()
         if self.cfg.get("telegram_token"):
             self._start_bot()
         elif not self.cfg.get("telegram_skipped"):
             self._show_telegram_setup()
+
+        # Retoma descargas que quedaron a medias en sesiones anteriores
+        self.after(500, self._resume_pending)
+
+    def _resume_pending(self):
+        for it in history_store.pending():
+            self._add_download(it["url"], it.get("chat_id"), item_id=it["id"])
 
     # ─── Telegram ────────────────────────────────────────────────────────────
 
@@ -349,7 +376,8 @@ class App(ctk.CTk):
             )
 
     def _show_telegram_setup(self):
-        card = ctk.CTkFrame(self, fg_color=CARD_BG, corner_radius=12)
+        card = ctk.CTkFrame(self, fg_color=CARD_BG, corner_radius=6,
+                            border_width=1, border_color=CARD_BORDER)
         card.grid(row=2, column=0, sticky="ew", padx=28, pady=(4, 8))
         self.setup_card = card
 
@@ -433,8 +461,14 @@ class App(ctk.CTk):
         self.url_var.set("")
         self._add_download(url)
 
-    def _add_download(self, url, chat_id=None):
-        """Crea la tarjeta y arranca la descarga (manual o desde Telegram)."""
+    def _add_download(self, url, chat_id=None, item_id=None):
+        """Crea la tarjeta y arranca la descarga (manual, Telegram o retomada)."""
+        # ¿Ya se está descargando en esta sesión?
+        if url in self.active_urls:
+            if self.bot and chat_id:
+                self.bot.notify(chat_id, "⚠️ Ese link ya está en proceso.")
+            return
+
         if self.empty_label.winfo_ismapped():
             self.empty_label.grid_forget()
 
@@ -443,15 +477,34 @@ class App(ctk.CTk):
         card.grid(row=1000 - self.cards_count, column=0, sticky="ew", pady=6, padx=4)
         self.cards_count += 1
 
-        thread = threading.Thread(target=self._worker, args=(url, card), daemon=True)
+        # ¿Ya se descargó antes y el archivo sigue ahí? No lo repite.
+        done = history_store.find_done(url)
+        if done:
+            card.set_done(done["file"])
+            if self.bot and chat_id:
+                self.bot.notify(
+                    chat_id,
+                    "⚠️ Ese video ya estaba descargado:\n"
+                    f"📁 {os.path.basename(done['file'])}",
+                )
+            return
+
+        self.active_urls.add(url)
+        if item_id is None:
+            item_id = history_store.add(url, chat_id)
+
+        thread = threading.Thread(
+            target=self._worker, args=(url, card, item_id), daemon=True
+        )
         thread.start()
 
     # ─── Descarga en segundo plano ───────────────────────────────────────────
 
-    def _worker(self, url, card):
+    def _worker(self, url, card, item_id):
         def progress(frac, text):
             self.after(0, card.set_progress, frac, text)
 
+        history_store.set_status(item_id, "downloading")
         try:
             path = downloader.download(url, self.cfg["download_dir"], progress)
         except Exception as e:
@@ -459,11 +512,14 @@ class App(ctk.CTk):
             msg = str(e) or e.__class__.__name__
             # yt-dlp antepone "ERROR: " a sus mensajes
             msg = msg.replace("ERROR: ", "")
+            history_store.set_status(item_id, "error", error=msg)
+            self.active_urls.discard(url)  # permite reintentar
             self.after(0, card.set_error, msg)
             if self.bot and getattr(card, "chat_id", None):
                 self.bot.notify(card.chat_id, f"❌ No se pudo descargar:\n{msg[:200]}")
             return
 
+        history_store.set_status(item_id, "done", file_path=path)
         self.after(0, card.set_done, path)
 
         if self.bot and getattr(card, "chat_id", None):
