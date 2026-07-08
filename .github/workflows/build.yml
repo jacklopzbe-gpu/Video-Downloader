@@ -15,7 +15,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - runner: macos-14
+          - runner: macos-latest
             arch: AppleSilicon
             
     runs-on: ${{ matrix.runner }}
